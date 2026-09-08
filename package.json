@@ -1,0 +1,21 @@
+{
+  "name": "BF6 Mod Template",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "bf6mods build",
+    "dev": "bf6mods dev",
+    "log": "bf6mods log",
+    "postinstall": "bf6mods prepare",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@bf6mods/cli": "^1.7.0",
+    "@bf6mods/sdk": "^1.7.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bf6-portal-mod-types": "^4.2.0",
+    "bf6-portal-utils": "^9.4.0"
+  }
+}

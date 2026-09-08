@@ -1,0 +1,181 @@
+import type { ConfigType } from "@bf6mods/sdk";
+
+export enum MapId {
+	SiegeOfCairo = "MP_Abbasid-ModBuilderCustom0",
+	EmpireState = "MP_Aftermath-ModBuilderCustom0",
+	BlackwellFields = "MP_Badlands-ModBuilderCustom0",
+	IberianOffensive = "MP_Battery-ModBuilderCustom0",
+	LiberationPeak = "MP_Capstone-ModBuilderCustom0",
+	ManhattanBridge = "MP_Dumbo-ModBuilderCustom0",
+	Eastwoord = "MP_Eastwood-ModBuilderCustom0",
+	FireStorm = "MP_FireStorm-ModBuilderCustom0",
+	SaintsQuarter = "MP_Limestone-ModBuilderCustom0",
+	NewSobekCity = "MP_Outskirts-ModBuilderCustom0",
+	MirakValley = "MP_Tungsten-ModBuilderCustom0",
+	GolfCourse = "MP_Granite_ClubHouse_Portal-ModBuilderCustom0",
+	DefenseNexus = "MP_Granite_TechCampus_Portal-ModBuilderCustom0",
+	PortalSandbox = "MP_Portal_Sand-ModBuilderCustom0",
+	Marina = "MP_Granite_Marina_Portal-ModBuilderCustom0",
+	Downtown = "MP_Granite_MainStreet_Portal-ModBuilderCustom0",
+	Area22B = "MP_Granite_MilitaryRnD_Portal-ModBuilderCustom0",
+	RedlineStorage = "MP_Granite_MilitaryStorage_Portal-ModBuilderCustom0",
+}
+
+/**
+ * Represents the root configuration for a Battlefield 6 mod project.
+ *
+ * This file combines both build-level settings (like entrypoints and output directories)
+ * and in-game configuration data (such as mutators and asset restrictions)
+ * under the `game` key.
+ *
+ * Use {@link defineBf6Config} to define and validate this structure
+ * in your `bf6.config.ts` file.
+ */
+export type Bf6Config = {
+	/**
+	 * The unique identifier of your mod experience.
+	 *
+	 * You can find this ID in the URL when editing your experience:
+	 * [https://portal.battlefield.com/bf6/experience/settings/mode?id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx](https://portal.battlefield.com/bf6/experience/settings/mode?id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+	 *
+	 * This ID is referenced when deploying your mod using:
+	 * npx \@bf6mods/cli deploy
+	 */
+	id?: string;
+
+	/**
+	 * The human-readable name of the mod.
+	 *
+	 * Typically matches the project name used in the BF6 mod editor or
+	 * the display name shown in the in-game mod browser.
+	 */
+	name: string;
+
+	/**
+	 * A short description of the mod’s purpose or content.
+	 * Used for display and metadata purposes.
+	 */
+	description: string;
+
+	/**
+	 * The output directory where compiled or bundled files are written.
+	 * Usually something like `"dist"` or `"build"`.
+	 */
+	outDir: string;
+
+	/**
+	 * Whether or not to output the built files like the entrypoint typescript file
+	 */
+	outputArtifacts?: boolean;
+
+	/**
+	 * The main entrypoint for your mod’s TypeScript source file.
+	 *
+	 * This is typically something like `"src/index.ts"` or `"src/main.ts"`.
+	 */
+	entrypoint?: string;
+
+	/**
+	 * One or more scene file paths (.json) that the mod includes.
+	 * If no file path is provided, it loads in the default spatial data.
+	 */
+	scenes?: ([MapId, string] | MapId)[];
+
+	/**
+	 * Path to a JSON file or other source that defines localized strings
+	 * used by the mod (optional).
+	 */
+	strings?: string;
+
+	/**
+	 * Generate strings automatically, by default this is enabled
+	 */
+	generateStrings?: boolean;
+
+	/**
+	 * Path to a thumbnail image for the mod.
+	 *
+	 * The image must meet BF6 Portal requirements:
+	 * - Max file size: 78KB
+	 * - Dimensions: 352x248 pixels
+	 * - Format: JPEG or PNG
+	 *
+	 * @example
+	 * ```ts
+	 * thumbnail: "assets/thumbnail.png"
+	 * // or
+	 * thumbnail: "thumbnail.jpg"
+	 * ```
+	 */
+	thumbnail?: string;
+
+	/**
+	 * Controls whether build output should be minified.
+	 *
+	 * Can be a boolean (to toggle all minification),
+	 * or an object specifying independent settings for JS and JSON files.
+	 *
+	 * @example
+	 * ```ts
+	 * minify: true
+	 * // or
+	 * minify: { js: true, json: false }
+	 * ```
+	 */
+	minify?:
+		| {
+				/** Whether to minify JavaScript output. */
+				js?: boolean;
+				/** Whether to minify JSON output. */
+				json?: boolean;
+		  }
+		/** Enables or disables all minification. */
+		| boolean;
+
+	/**
+	 * The underlying in-game configuration derived from `ConfigType`
+	 * in the BF6 SDK. Includes gameplay-level details like mutators,
+	 * asset restrictions, and team compositions.
+	 *
+	 * The following properties are **excluded**:
+	 * - `attachments`
+	 * - `workspace`
+	 * - `mapRotation`
+	 * - `name`
+	 * - `description`
+	 *
+	 * since those are either redundant or handled elsewhere.
+	 */
+	game: Omit<
+		ConfigType,
+		"attachments" | "workspace" | "mapRotation" | "name" | "description"
+	>;
+};
+
+/**
+ * Defines and validates a Battlefield 6 mod configuration object.
+ *
+ * This helper ensures your config is properly typed and can be
+ * statically analyzed by TypeScript.
+ *
+ * @example
+ * ```ts
+ * export default defineBf6Config({
+ *   name: "My Custom Mod",
+ *   description: "Adds custom rules",
+ *   outDir: "dist",
+ *   entrypoint: "src/main.ts",
+ *   game: {
+ *     mutators: [],
+ *     assetRestrictions: {},
+ *     teamComposition: [],
+ *   },
+ * });
+ * ```
+ *
+ * @param bf6Config The configuration object to validate and return.
+ * @returns The validated Battlefield 6 configuration object.
+ */
+export function defineBf6Config(bf6Config: Bf6Config): Bf6Config {
+	return bf6Config;
+}
