@@ -18,20 +18,20 @@
  */
 
 import { Events } from "bf6-portal-utils/events";
-import { OBJECT_ID } from "./ids";
-import { requirePlayerState, getAllTrackedPlayers } from "./player-state.ts";
+import { OBJECT_ID } from "../../config/ids.ts";
+import { requirePlayerState, getAllTrackedPlayers } from "../../player/player-state.ts";
 import {
   getFactionId,
   isScoringFaction,
   SCORING_FACTION_IDS,
   type FactionId,
-} from "./teams";
+} from "../../config/teams.ts";
 import {
   CONTROL_ZONE_TICK_SECONDS,
   CONTROL_ZONE_TICKET_REWARD,
   HOTZONE_PRESENCE_WEIGHT,
-} from "./constants";
-import { evaluateWinCondition } from "./win-condition";
+} from "../../config/constants.ts";
+import { evaluateWinCondition } from "./win-condition.ts";
 
 /** Faction → tracked ticket total. This module owns the only writes to it; win-condition.ts reads it. */
 const ticketsByFaction: Record<FactionId, number> = { 1: 0, 2: 0, 3: 0, 4: 0 };

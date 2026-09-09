@@ -10,22 +10,22 @@
  * `Team` (`index.d.ts:783/786`).
  */
 
-import { VICTORY_TICKET_TARGET } from "./constants";
-import { SCORING_FACTION_IDS, type FactionId } from "./teams";
-import { getAllPlayersOnTeam } from "./player-state";
-import { getCash } from "./wallet";
+import { VICTORY_TICKET_TARGET } from "../../config/constants.ts";
+import { SCORING_FACTION_IDS, type FactionId } from "../../config/teams.ts";
+import { getAllPlayersOnTeam } from "../../player/player-state.ts";
+import { getCash } from "../../player/wallet.ts";
 
 /** Set once `mod.EndGameMode` has been called, so a late tick can't call it a second time. */
 let gameHasEnded = false;
 
 /** Sum of `currentCash` across every tracked player currently on `faction`'s team. */
 function cumulativeWalletTotal(faction: FactionId): number {
-  const team = mod.GetTeam(faction);
-  let total = 0;
-  for (const [player] of getAllPlayersOnTeam(team)) {
-    total += getCash(player);
-  }
-  return total;
+	const team = mod.GetTeam(faction);
+	let total = 0;
+	for (const [player] of getAllPlayersOnTeam(team)) {
+		total += getCash(player);
+	}
+	return total;
 }
 
 /**
@@ -35,31 +35,32 @@ function cumulativeWalletTotal(faction: FactionId): number {
  * across all active squad profiles) decides which one wins.
  */
 export function evaluateWinCondition(
-  ticketsByFaction: Readonly<Record<FactionId, number>>,
+	ticketsByFaction: Readonly<Record<FactionId, number>>,
 ): void {
-  if (gameHasEnded) {
-    return;
-  }
+	if (gameHasEnded) {
+		return;
+	}
 
-  const qualifying = SCORING_FACTION_IDS.filter(
-    (faction) => ticketsByFaction[faction] >= VICTORY_TICKET_TARGET,
-  );
-  if (qualifying.length === 0) {
-    return;
-  }
+	const qualifying = SCORING_FACTION_IDS.filter(
+		(faction) => ticketsByFaction[faction] >= VICTORY_TICKET_TARGET,
+	);
+	if (qualifying.length === 0) {
+		return;
+	}
 
-  let winner: FactionId;
-  if (qualifying.length === 1) {
-    winner = qualifying[0]!;
-  } else {
-    // Simultaneous 100+ for two or more factions: highest cumulative wallet total wins.
-    winner = qualifying.reduce((best, candidate) =>
-      cumulativeWalletTotal(candidate) > cumulativeWalletTotal(best)
-        ? candidate
-        : best,
-    );
-  }
+	let winner: FactionId;
+	if (qualifying.length === 1) {
+		winner = qualifying[0]!;
+	} else {
+		// Simultaneous 100+ for two or more factions: highest cumulative wallet total wins.
+		winner = qualifying.reduce(
+			(best, candidate) =>
+				cumulativeWalletTotal(candidate) > cumulativeWalletTotal(best)
+					? candidate
+					: best,
+		);
+	}
 
-  gameHasEnded = true;
-  mod.EndGameMode(mod.GetTeam(winner));
+	gameHasEnded = true;
+	mod.EndGameMode(mod.GetTeam(winner));
 }

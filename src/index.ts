@@ -14,23 +14,28 @@
  */
 
 // Config (data only — no side effects, safe to import first)
-import "./config/ids";
-import "./config/constants";
-import "./config/teams";
-import "./config/economy";
+import "./config/ids.ts";
+import "./config/constants.ts";
+import "./config/teams.ts";
+import "./config/economy.ts";
 
 // Player state
-import "./player/player-state";
-import "./player/wallet";
-import "./player/progression";
+import "./player/player-state.ts";
+import "./player/wallet.ts";
+import "./player/progression.ts";
 
 // Core gameplay mechanics (generic, reusable primitives)
-import "./game/core";
+import "./game/core/transition-state.ts";
 
 // WARDOGS mode-specific rules (HotZone, ControlZone, FOB, win condition, Chaos AI)
-import "./game/mode";
+import "./game/mode/chaos-ai.ts";
+import "./game/mode/controlzone.ts";
+import "./game/mode/hotzone.ts";
+import "./game/mode/fob.ts";
+import "./game/mode/win-condition.ts";
 
 // UI (SolidUI-composed: scoreboard, HUD, buy menu)
-import "./ui/scoreboard";
-import "./ui/hud";
-import "./ui/buy-menu";
+import "./ui/scoreboard.ts";
+import "./ui/hud.ts";
+import "./ui/buy-menu.ts";
+import "./ui/buy-validator.ts";
