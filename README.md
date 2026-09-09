@@ -1,36 +1,65 @@
-# BF6 Mod Template
+# WARDOGS — Battlefield 6 Portal Custom Mod
 
-Couldn't find a solid, up-to-date bf6 modding template...
-So I created my own BF6 Mod Template to suit my needs. 
-Based on the following (credits):
+**WARDOGS** is a hardcore, asymmetrical 3-faction PMC King-of-the-Hill experience built for Battlefield 6 Portal on *Redline Storage (`MP_Granite_MilitaryStorage`)*.
 
-[Bf6mods](https://github.com/bf6mods/bf6mods) - used for initial project setup, cli tools. Modified the `.bf6/*` config to handle `bf6-portal-mod-types`. See [docs](https://bf6mods.github.io/bf6mods).
+Repository: [`fivelity/wardogs`](https://github.com/fivelity/wardogs)
 
-[bf6-portal-mod-types](https://github.com/deluca-mike/bf6-portal-mod-types) - for up-to-date bf6 portal sdk types (v1.4.2.0). See [docs](https://deluca-mike.github.io/bf6-portal-mod-types/) 
+---
 
-[bf6-portal-utils](https://github.com/deluca-mike/bf6-portal-utils) - helpful utils to save time. See [README.md](https://github.com/deluca-mike/bf6-portal-utils#)
+## 🏗️ Architecture & Tech Stack
+
+* **Engine / Map:** Battlefield 6 Portal / `MP_Granite_MilitaryStorage` (Redline Storage).
+* **Tooling:** [`@bf6mods/cli`](https://www.google.com/search?q=https://www.npmjs.com/package/%40bf6mods/cli) bundler, TypeScript (`strict: true`).
+* **Types & Helpers:** `bf6-portal-mod-types` (official SDK type defs) and `bf6-portal-utils` (runtime event, UI, and utility helpers).
+* **Package Manager:** **npm** (`package-lock.json`).
+
+---
+
+## 🗂️ Project Layout
+
+```text
+wardogs/
+├── .github/workflows/      # CI typecheck & build validation
+├── .llm/                   # AI agent rules & design briefs
+│   ├── AGENTS.md           # Authoritative developer/agent rules
+│   └── WARDOGS_DESIGN_BRIEF.md # Game design contract & system mechanics
+├── src/
+│   ├── config/             # Centralized ObjIds, team definitions, price tables
+│   ├── player/             # Persistent wallet, mastery tracks, player state
+│   ├── game/               # Core primitives & mode rules (HotZone, FOB, AI, win condition)
+│   ├── ui/                 # SolidUI-composed scoreboard, HUD, and buy menus
+│   └── index.ts            # Entrypoint & event-handler subscription wiring
+├── package.json
+└── tsconfig.json
+
+```
+
+---
+
+## 🚀 Development Workflow
+
+1. **Install Dependencies:**
+```
+npm install
+```
 
 
-## Installation
-
-Run `npm install` in this directory.
-
-## Deploying Project to Portal
-
-There are two different ways of deploying a project to portal.
-
-### Manually Import
-
-Just run `npm run build` in your project dir, open [portal.battlefield.com](https://portal.battlefield.com), click import, and select the `dist/mod.json` file.
-
-### `npx @bf6mods/cli deploy`
-
-To use this, you must first install puppeteer via `npm -g i puppeteer`, but after doing so you can just run this command, and you will
-have your project deploy automatically for you.
-
-Important note on this. The [portal.battlefield.com](https://portal.battlefield.com) will not update showing the changes from the deployed code. This is due to the browsers cache.
+2. **Type Checking:**
+```
+npm run typecheck
+```
 
 
-I don't take credit for anything in this repo. I just organized the tools I needed into a base template for my needs. Feel free to use. 
+3. **Build Bundle:**
+```
+npm run build
+```
 
-Special thanks to **deluca-mike** for having the only relavent repos I found with latest Portal SDK and **bf6mods** for insights, cli tools, and initial project config/sdk.
+
+4. **Deploy & Test:** Upload the compiled output from `dist/` into the Portal Web Builder. Always test in-game locally and verify execution via `PortalLog.txt`. Never write production logic directly in the web builder interface.
+
+---
+
+<!-- ## 🔍 Repository Reference Audit
+
+All project documentation (`AGENTS.md`, `WARDOGS_DESIGN_BRIEF.md`, and this `README.md`) has been fully reconciled against the new `fivelity/wardogs` repository structure and verified against `bf6-portal-mod-types@4.2.0` and `bf6-portal-utils@9.4.0`. All legacy references to `bf6-wardogs` have been completely removed. --!>
