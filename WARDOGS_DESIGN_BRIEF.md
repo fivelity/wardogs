@@ -1,8 +1,6 @@
 # WARDOGS Design Brief
 
-> Renamed from `brief.md` → `WARDOGS_DESIGN_BRIEF.md` for clarity now that the repo has multiple
-> `.llm/*` docs. This is the gate referenced by `AGENTS.md` §1 and §9 — no gameplay logic is
-> written for a rule that isn't reflected here first.
+> `WARDOGS_DESIGN_BRIEF.md` This is the gate referenced by `AGENTS.md` §1 and §9 — no gameplay logic is written for a rule that isn't reflected here first.
 
 **Quick summary:** Gritty, high-stakes three-faction PMC King-of-the-Hill experience featuring a
 mathematically drifting "HotZone" multiplier, persistent server-side wallets, modular weapon
@@ -347,13 +345,13 @@ code that assumes such a function exists (see `AGENTS.md` §2).
 
 ## 📝 Development Philosophy
 
-WARDOGS merges the tactical decision-making of hardcore military-sim games (*Squad*,
+**WARDOGS** merges the tactical decision-making of military-sim games (*Squad*, *ARMA*,
 *Project Reality*) with Battlefield's accessible vehicle/infantry sandbox. Separating transactional
-cash (match utility) from permanent XP progression (mastery limits) creates a strategic battle of
+cash (match utility) from custom XP progression (mastery limits) creates a strategic battle of
 attrition where team coordination and logistics are the primary vectors of victory.
 
-**Inspiration:** *Project Reality* (cooperative logistics, FOB construction) · *Squad* (melee
-shovel building, teamplay spawning) · *Escape from Tarkov* (gunsmithing, wallet progression,
+**Inspiration:** ***WARDOGS*** (gamemode, gameplay features, rules, economy/cash) · ***Project Reality*** (cooperative logistics, FOB construction) · ***Squad*** (melee
+shovel building, teamplay spawning) · ***Escape from Tarkov*** (gunsmithing, wallet progression,
 high-risk equipment loss).
 
 ---
@@ -362,9 +360,6 @@ high-risk equipment loss).
 
 - `AGENTS.md` — canonical coding/architecture rules (this brief is downstream of it for
   SDK-capability questions, upstream of it for what to build).
-- `.llm/dev_guidelines.md` — agent operating procedure.
-- `.claude/agents/wardogs-bf6-portal-agent.agent.md` — Claude Code agent definition.
-- `DOCS/BF6_SDK.md` — human-facing SDK usage notes.
 - Real SDK source of truth: `node_modules/bf6-portal-mod-types/index.d.ts`,
   `node_modules/bf6-portal-utils/*/index.d.ts` (see `AGENTS.md` §2 — never substitute memory for
   these files).

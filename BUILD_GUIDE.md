@@ -1,6 +1,6 @@
 # WARDOGS Build Guide
 
-Companion to `AGENTS.md` (rules) and `.llm/WARDOGS_DESIGN_BRIEF.md` (design contract). This file
+Companion to `AGENTS.md` (rules) and `WARDOGS_DESIGN_BRIEF.md` (design contract). This file
 is the map of every source file the mod needs, what each one is responsible for, and — for each —
 concrete guidance on building it correctly the first time. Status legend: ✅ built · 🚧 next up ·
 ⬜ not started.
@@ -38,7 +38,7 @@ add `export function OnX(...)` here (AGENTS.md §4); that silently fights the `E
    add code that assumes more than one of them is individually addressable until that's fixed on
    the Godot/spatial-JSON side.
 
-### `src/config/constants.ts` — ⬜ not started
+### `src/config/constants.ts` — ⬜ started
 **Responsibility:** pure data — tick cadences, timer durations, non-economy tuning numbers (e.g.
 ControlZone tick interval `4.0`s, HotZone drift speed, endgame trigger threshold `75` tickets,
 staging duration `60`s, respawn delay `10`s).
@@ -47,7 +47,7 @@ staging duration `60`s, respawn delay `10`s).
 `mod.*` calls — if a value needs a Portal API to compute, it doesn't belong here. Export as
 `as const` objects, not loose `let`/`var`, so consumers get literal types.
 
-### `src/config/teams.ts` — ⬜ not started
+### `src/config/teams.ts` — ⬜ started
 **Responsibility:** faction definitions — Team1=Lonestar, Team2=Manticore, Team3=Valkyra,
 Team4=Chaos Squads (AI-only, non-scoring) — and any helper for going from a `mod.Team` to a
 faction identity.
@@ -60,7 +60,7 @@ package in the SDK book reference and does **not** exist in `bf6-portal-utils@9.
 own small `getFactionId(team: mod.Team): number` wrapper around `mod.GetObjId` here once, and
 have every other file import it instead of calling `GetObjId` on a team ad hoc.
 
-### `src/config/economy.ts` — ⬜ not started
+### `src/config/economy.ts` — ⬜ started
 **Responsibility:** pure data tables — starting cash ($10,000), price tables per weapon/attachment/
 armor tier, the pro-rated surcharge curve (up to 200% markup scaling to 0% as mastery tier
 unlocks), XP-per-action table (kill +150, revive +200, cargo delivery +300, build hit +120).
@@ -75,7 +75,7 @@ this file pure data (objects/tables), no logic — the surcharge *calculation* b
 
 ## 2. Player state
 
-### `src/player/player-state.ts` — 🚧 next up
+### `src/player/player-state.ts` — 🚧 started
 **Responsibility:** the `JsPlayer` class — one instance per connected `mod.Player`, holding
 `currentCash: number`, `tracks: Record<TrackId, { level: number; xp: number }>`,
 `insideControl: boolean`, `insideHot: boolean` (shape specified in the design brief's Player
@@ -95,7 +95,7 @@ State Variables table).
   exporting the `Map` directly, so every consumer goes through one choke point that can assert
   the player is tracked.
 
-### `src/player/wallet.ts` — 🚧 next up (depends on player-state.ts)
+### `src/player/wallet.ts` — 🚧 started (depends on player-state.ts)
 **Responsibility:** all cash mutation — add/deduct, transaction-flash trigger for the HUD, the
 pro-rated surcharge calculation, Salvage Pack payout on pickup.
 **How to build it correctly:**
@@ -110,7 +110,7 @@ pro-rated surcharge calculation, Salvage Pack payout on pickup.
   unlock tier, not a flat global multiplier. Write this as a pure function
   `getSurcharge(playerTrackLevel, itemRequiredTier): number` that's independently testable.
 
-### `src/player/progression.ts` — 🚧 next up (depends on player-state.ts)
+### `src/player/progression.ts` — 🚧 started (depends on player-state.ts)
 **Responsibility:** XP/level logic for the six mastery tracks (Assault, Medic, Support, Recon,
 Driver/Pilot, Engineer per the brief), levels 1–5.
 **How to build it correctly:** XP thresholds per level should live in `config/economy.ts` as data;
@@ -164,7 +164,7 @@ Portal Gadget PDA aim, spawned/torn down via `mod.SpawnObject`/`mod.UnspawnObjec
   a hard number — decide and document this in the design brief before enforcing it in code, per
   AGENTS.md §1's gate rule).
 
-### `src/game/mode/controlzone.ts` — ⬜ not started
+### `src/game/mode/controlzone.ts` — ⬜ started
 **Responsibility:** majority-hold tick logic for the static Control Zone (`AT_CONTROLZONE`,
 `CP_CONTROLZONE`). +1 ticket per faction per 4.0s tick while that faction holds majority presence.
 **How to build it correctly:**
@@ -250,7 +250,7 @@ acceleration in Phase 3, out-of-bounds air-patrol behavior, periodic HotZone mor
   `ui/scoreboard.ts`'s ticket display — filter it out explicitly at the point where you enumerate
   teams, don't rely on it happening to have zero tickets to look inert.
 
-### `src/game/mode/win-condition.ts` — ⬜ not started
+### `src/game/mode/win-condition.ts` — ⬜ started
 **Responsibility:** the 100-ticket win check and the `EndGameMode` workaround.
 **How to build it correctly:**
 - Check ticket totals from your own tracked score state (the same state `controlzone.ts` writes
@@ -325,7 +325,7 @@ types problem to solve by declaring new ones into existence.
 
 ## 7. Build tooling & CI
 
-### `package.json` — needs updating (pnpm → npm)
+### `package.json` — done (pnpm → npm)
 Switch `packageManager`/scripts to npm equivalents; regenerate `package-lock.json` with
 `npm install` (deleting any `pnpm-lock.yaml` first). Scripts stay the same
 (`build`, `dev`, `log`, `postinstall`, `typecheck`) — only the lockfile and install command change.
@@ -342,14 +342,8 @@ satisfy both. Fail the job on either step failing; don't let `build` run if `typ
 ## 8. Documentation cross-references
 
 - `AGENTS.md` — read first, always current for hard rules.
-- `.llm/WARDOGS_DESIGN_BRIEF.md` — the rules gate; if this build guide and the brief ever disagree
+- `WARDOGS_DESIGN_BRIEF.md` — the rules gate; if this build guide and the brief ever disagree
   on a gameplay rule (not an SDK-capability fact), the brief wins and this doc needs updating.
-- `.llm/dev_guidelines.md` — ⬜ not started; should describe the day-to-day loop (pick a ⬜ file
-  from this doc → verify its cited SDK symbols still match `node_modules/` → implement → update
-  this doc's status marker to ✅).
-- `DOCS/BF6_SDK.md` — ⬜ not started; intended as a curated, human-readable subset of the verified
-  `.d.ts` surface actually used by WARDOGS (not a dump of the whole SDK) — populate incrementally
-  as each mode file is built, citing the same line-number style used in this document.
 
 ---
 
