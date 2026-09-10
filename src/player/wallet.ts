@@ -3,12 +3,12 @@
  * economy.ts header) — every mutation here is custom application state on `JsPlayer`.
  *
  * Every caller must go through `addCash` / `spendCash` (never mutate `JsPlayer.currentCash`
- * directly) so the transaction-flash hook below stays the single source `ui/hud.ts` (not yet
- * built) listens on, per BUILD_GUIDE.md §2.
+ * directly) so the transaction-flash hook below stays the single source `ui/hud.ts` listens on,
+ * per BUILD_GUIDE.md §2.
  */
 
-import { requirePlayerState } from "./player-state";
-import { SURCHARGE_MAX_MULTIPLIER, SURCHARGE_MIN_MULTIPLIER, MAX_TRACK_LEVEL } from "./economy";
+import { requirePlayerState } from "./player-state.ts";
+import { SURCHARGE_MAX_MULTIPLIER, SURCHARGE_MIN_MULTIPLIER, MAX_TRACK_LEVEL } from "../config/economy.ts";
 
 export type CashReason = "kill" | "revive" | "cargoDelivery" | "buildHit" | "salvagePickup" | "purchase";
 export type MaterialsReason = "cargoDelivery" | "fobPlacement" | "buildHit";
@@ -74,8 +74,7 @@ export function addMaterials(player: mod.Player, amount: number, _reason: Materi
 
 /**
  * Attempts to deduct `amount` materials. Returns `true` and deducts if affordable, `false`
- * (balance untouched) otherwise. `fob.ts` calls this before spawning any FOB object — see the
- * "still missing" note this closes in BUILD_GUIDE.md §4.
+ * (balance untouched) otherwise. `fob.ts` calls this before spawning any FOB object.
  */
 export function spendMaterials(player: mod.Player, amount: number, _reason: MaterialsReason): boolean {
 	if (amount <= 0) {

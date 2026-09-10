@@ -3,13 +3,13 @@
  *
  * Design: WARDOGS_DESIGN_BRIEF.md → "Player State Shape" (`tracks: Record<TrackId, {level, xp}>`).
  * Pure logic only: reads the XP-table data from `economy.ts`, mutates `player-state.ts`'s
- * per-player track state, and exposes a level-up callback list that `ui/hud.ts` (not yet built)
- * and future VFX/SFX code can subscribe to, without those consumers needing to import
- * `player-state.ts` directly for this concern.
+ * per-player track state, and exposes a level-up callback list that `ui/hud.ts` and future
+ * VFX/SFX code can subscribe to, without those consumers needing to import `player-state.ts`
+ * directly for this concern.
  */
 
-import { TRACK_XP_THRESHOLDS, MAX_TRACK_LEVEL } from "./economy";
-import { requirePlayerState } from "./player-state";
+import { TRACK_XP_THRESHOLDS, MAX_TRACK_LEVEL } from "../config/economy.ts";
+import { requirePlayerState } from "./player-state.ts";
 
 export type TrackId = "assault" | "medic" | "support" | "recon" | "driverPilot" | "engineer";
 

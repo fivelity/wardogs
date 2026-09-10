@@ -12,8 +12,8 @@
  */
 
 import { Events } from "bf6-portal-utils/events";
-import { STARTING_CASH } from "./constants";
-import { createInitialTrackState, type TrackId, type TrackState } from "./progression";
+import { STARTING_CASH } from "../config/constants.ts";
+import { createInitialTrackState, type TrackId, type TrackState } from "./progression.ts";
 
 export class JsPlayer {
 	/** Persistent transactional wallet balance. Starts at STARTING_CASH exactly once per player. */
@@ -33,6 +33,9 @@ export class JsPlayer {
 
 	/** Whether the player is currently inside the 60m drifting HotZone. */
 	insideHot = false;
+
+	/** Slot-1 primary weapon package purchased at a buy station; wiped on death/undeploy. */
+	purchasedPrimary: string | undefined = undefined;
 }
 
 /** Module-scope tracking Map — populated/cleaned up by the join/leave subscriptions below. */

@@ -7,7 +7,7 @@
  * there isn't one (see AGENTS.md §2).
  */
 
-import type { TrackId } from "./progression";
+import type { TrackId } from "../player/progression.ts";
 
 /** WARDOGS_DESIGN_BRIEF.md → "Point System": cash + XP rewards per action. */
 export const CASH_REWARDS = {

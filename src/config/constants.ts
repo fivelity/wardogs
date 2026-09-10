@@ -42,3 +42,31 @@ export const UNDEPLOY_TICKET_PENALTY = 1;
  * handler wired yet) — kept here so the value exists in one place once that handler is built.
  */
 export const MATCH_DURATION_SECONDS = 30 * 60;
+
+// ── HotZone drift tuning (game/mode/hotzone.ts) ──
+/** Radius (meters) the drifting HotZone flag may wander from the last drift target per hop. */
+export const HOTZONE_DRIFT_STEP_RADIUS = 25;
+/** Seconds `mod.MoveObjectOverTime` takes to glide the flag to its next drift target. */
+export const HOTZONE_DRIFT_DURATION_SECONDS = 20;
+/** Seconds between picking a new drift target once the previous glide completes. */
+export const HOTZONE_DRIFT_INTERVAL_SECONDS = 45;
+
+// ── Control Tower tuning (game/mode/towers.ts) ──
+/** Decryption segments required, per tower, before HotZone drift-lock unlocks for that team. */
+export const TOWER_DECRYPTION_SEGMENTS_REQUIRED = 1;
+
+// ── Salvage Pack tuning (game/mode/salvage.ts) ──
+/** Cash contained in a Salvage Pack dropped on undeploy. */
+export const SALVAGE_PACK_CASH = 250;
+/** Radius (meters) of the pickup trigger spawned around a Salvage Pack. */
+export const SALVAGE_PACK_PICKUP_RADIUS = 2;
+/** Seconds a Salvage Pack remains lootable before it despawns. */
+export const SALVAGE_PACK_LIFETIME_SECONDS = 90;
+
+// ── Chaos Squads tuning (game/mode/chaos-ai.ts) ──
+/** Total Chaos Squads AI bots maintained at any time (4 squads of 3). */
+export const CHAOS_AI_TOTAL_BOTS = 12;
+/** Seconds between Chaos AI respawn-check ticks outside Phase 3. */
+export const CHAOS_AI_RESPAWN_INTERVAL_SECONDS = 30;
+/** Phase 3 multiplier applied to Chaos AI respawn cadence (smaller = faster). */
+export const CHAOS_AI_PHASE_3_RESPAWN_MULTIPLIER = 0.5;

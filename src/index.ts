@@ -24,18 +24,17 @@ import "./player/player-state.ts";
 import "./player/wallet.ts";
 import "./player/progression.ts";
 
-// Core gameplay mechanics (generic, reusable primitives)
-import "./game/core/transition-state.ts";
+// NOTE: game/core exports only plain classes (TransitionState) with zero Events.*.subscribe()
+// calls, so it is intentionally not imported here — it has nothing to register at load time. Any
+// file that needs it (fob.ts, and future core primitives) imports it directly.
 
-// WARDOGS mode-specific rules (HotZone, ControlZone, FOB, win condition, Chaos AI)
-import "./game/mode/chaos-ai.ts";
-import "./game/mode/controlzone.ts";
-import "./game/mode/hotzone.ts";
-import "./game/mode/fob.ts";
-import "./game/mode/win-condition.ts";
+// WARDOGS mode-specific rules (FOB, ControlZone, HotZone, Towers, Salvage, Chaos AI). Order
+// matters here: hotzone.ts and chaos-ai.ts both import controlzone.ts's isPhase3(), and
+// towers.ts imports hotzone.ts's lockDriftTarget() — game/mode/index.ts's own import order
+// already respects this, so a single barrel import is sufficient and correct.
+import "./game/mode/index.ts";
 
 // UI (SolidUI-composed: scoreboard, HUD, buy menu)
 import "./ui/scoreboard.ts";
 import "./ui/hud.ts";
 import "./ui/buy-menu.ts";
-import "./ui/buy-validator.ts";

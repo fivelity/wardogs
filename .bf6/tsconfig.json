@@ -12,8 +12,7 @@
 		"allowImportingTsExtensions": true,
 		"noEmit": true,
 		"types": [
-			"bf6-portal-mod-types",
-			"@bf6mods/sdk"
+			"bf6-portal-mod-types"
 		],
 	},
 	"include": ["../**/*", "./bf6.d.ts"]

@@ -34,16 +34,12 @@ function cumulativeWalletTotal(faction: FactionId): number {
  * cross the target on the same tick, the brief's tiebreaker (highest cumulative wallet total
  * across all active squad profiles) decides which one wins.
  */
-export function evaluateWinCondition(
-	ticketsByFaction: Readonly<Record<FactionId, number>>,
-): void {
+export function evaluateWinCondition(ticketsByFaction: Readonly<Record<FactionId, number>>): void {
 	if (gameHasEnded) {
 		return;
 	}
 
-	const qualifying = SCORING_FACTION_IDS.filter(
-		(faction) => ticketsByFaction[faction] >= VICTORY_TICKET_TARGET,
-	);
+	const qualifying = SCORING_FACTION_IDS.filter((faction) => ticketsByFaction[faction] >= VICTORY_TICKET_TARGET);
 	if (qualifying.length === 0) {
 		return;
 	}
@@ -53,14 +49,16 @@ export function evaluateWinCondition(
 		winner = qualifying[0]!;
 	} else {
 		// Simultaneous 100+ for two or more factions: highest cumulative wallet total wins.
-		winner = qualifying.reduce(
-			(best, candidate) =>
-				cumulativeWalletTotal(candidate) > cumulativeWalletTotal(best)
-					? candidate
-					: best,
+		winner = qualifying.reduce((best, candidate) =>
+			cumulativeWalletTotal(candidate) > cumulativeWalletTotal(best) ? candidate : best
 		);
 	}
 
 	gameHasEnded = true;
 	mod.EndGameMode(mod.GetTeam(winner));
+}
+
+/** True once a winner has been declared — other systems (Chaos AI, buy menus) can gate on this. */
+export function hasGameEnded(): boolean {
+	return gameHasEnded;
 }
