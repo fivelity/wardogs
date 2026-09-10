@@ -3,7 +3,7 @@
 		"baseUrl": "..",
 		"paths": {
 			"#imports": ["./.bf6/imports"],
-			"modlib": ["./node_modules/bf6-portal-mod-types/index.d.ts"]
+			"modlib": ["node_modules/bf6-portal-mod-types/index.d.ts"]
 		},
 		"target": "ES2021",
 		"module": "NodeNext",
@@ -11,12 +11,7 @@
 		"strict": true,
 		"allowImportingTsExtensions": true,
 		"noEmit": true,
-		"ignoreDeprecations": "6.0",
-		"types": [
-			"bf6-portal-mod-types",
-			"@bf6mods/sdk"
-		],
-
+		"types": ["bf6-portal-mod-types"]
 	},
 	"include": ["../**/*", "./bf6.d.ts"]
 }
