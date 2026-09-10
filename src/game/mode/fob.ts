@@ -14,14 +14,16 @@
  * All three are torn down together via `mod.UnspawnObject` when the FOB is destroyed/abandoned.
  */
 
-import { Events } from "bf6-portal-utils/events";
-import { PortalGadget } from "bf6-portal-utils/portal-gadget";
-import { RuntimeSpawn_Common } from "bf6-portal-mod-types/runtime-spawn-enums/common";
+/**
+ * fob.ts — freely-placeable Forward Operating Bases.
+ */
+
+import { Events } from "bf6-portal-utils/events/index.ts";
+import { PortalGadget } from "bf6-portal-utils/portal-gadget/index.ts";
 import { TransitionState } from "../core/transition-state.ts";
 import { spendMaterials } from "../../player/wallet.ts";
 import { FOB_MATERIAL_COST } from "../../config/economy.ts";
 
-/** Number of SandBags props ringed around each FOB's deploy point for cover. */
 const FOB_SANDBAG_RING_COUNT = 4;
 const FOB_SANDBAG_RING_RADIUS = 4;
 
@@ -34,26 +36,18 @@ export interface ActiveFob {
 	position: mod.Vector;
 }
 
-/** Team ID → currently active FOBs for that team. Multiple FOBs per team are allowed. */
 const activeFobsByTeam = new Map<number, ActiveFob[]>();
-
 let nextFobId = 1;
 
-/**
- * Builds one FOB at `position` for `team`, unconditionally. This function never checks
- * affordability — callers must go through `tryPlaceFob` (which deducts `FOB_MATERIAL_COST` via
- * `wallet.ts` before calling this) rather than calling `placeFob` directly, except in tests where
- * the cost check is intentionally bypassed.
- */
 function placeFob(team: mod.Team, position: mod.Vector, facing: mod.Vector): ActiveFob {
 	const deploySpawnPoint = mod.SpawnObject(
-		RuntimeSpawn_Common.PlayerSpawner,
+		mod.RuntimeSpawn_Common.PlayerSpawner,
 		position,
 		facing
 	) as mod.SpawnPoint;
 
 	const emplacementSpawner = mod.SpawnObject(
-		RuntimeSpawn_Common.StationaryEmplacementSpawner,
+		mod.RuntimeSpawn_Common.StationaryEmplacementSpawner,
 		position,
 		facing
 	) as mod.EmplacementSpawner;
@@ -66,7 +60,7 @@ function placeFob(team: mod.Team, position: mod.Vector, facing: mod.Vector): Act
 			mod.YComponentOf(position),
 			mod.ZComponentOf(position) + FOB_SANDBAG_RING_RADIUS * Math.sin(angle)
 		);
-		const bag = mod.SpawnObject(RuntimeSpawn_Common.SandBags_01_C90_A, offset, facing) as mod.Object;
+		const bag = mod.SpawnObject(mod.RuntimeSpawn_Common.SandBags_01_C90_A, offset, facing) as mod.Object;
 		sandbags.push(bag);
 	}
 
@@ -79,8 +73,6 @@ function placeFob(team: mod.Team, position: mod.Vector, facing: mod.Vector): Act
 		position,
 	};
 
-	// mod.Object is a real union that includes Team (verified in bf6-portal-mod-types/types.d.ts);
-	// GetObjId is valid on any opaque type in that union, including Team.
 	const teamId = mod.GetObjId(team);
 	const existing = activeFobsByTeam.get(teamId) ?? [];
 	existing.push(fob);
@@ -89,12 +81,6 @@ function placeFob(team: mod.Team, position: mod.Vector, facing: mod.Vector): Act
 	return fob;
 }
 
-/**
- * Validates and deducts `FOB_MATERIAL_COST` in materials from `player` via `wallet.ts`, then
- * builds the FOB only if that succeeds. Returns the built FOB, or `undefined` (no materials
- * deducted, nothing spawned) if the player couldn't afford it. This is the function everything
- * outside this file should call — not `placeFob` directly.
- */
 function tryPlaceFob(
 	player: mod.Player,
 	team: mod.Team,
@@ -109,7 +95,6 @@ function tryPlaceFob(
 	return placeFob(team, position, facing);
 }
 
-/** Tears down every spawned object belonging to a FOB and removes it from tracking. */
 function teardownFob(fob: ActiveFob): void {
 	mod.UnspawnObject(fob.deploySpawnPoint);
 	mod.UnspawnObject(fob.emplacementSpawner);
@@ -127,10 +112,6 @@ function teardownFob(fob: ActiveFob): void {
 	}
 }
 
-/**
- * Wires the Portal Gadget PDA fire event to FOB placement. A per-player TransitionState guards
- * against placing multiple FOBs on a single sustained trigger hold.
- */
 const placementGuardByPlayer = new Map<mod.Player, TransitionState>();
 
 PortalGadget.onFireStart(async (player, _isZooming, getTarget) => {
@@ -156,9 +137,6 @@ PortalGadget.onFireStart(async (player, _isZooming, getTarget) => {
 	guard.reset();
 });
 
-Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {
-	// Placement guards are keyed by mod.Player references; stale entries are harmless (no
-	// per-tick iteration cost) but could be swept here if profiling shows it matters.
-});
+Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {});
 
 export { placeFob, tryPlaceFob, teardownFob, activeFobsByTeam };

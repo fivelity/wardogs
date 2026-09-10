@@ -15,15 +15,15 @@
  * `node_modules/bf6-portal-utils/solid-ui/` before shipping and adjust call shapes if they differ.
  */
 
-import { Events } from "bf6-portal-utils/events";
-import { SolidUI } from "bf6-portal-utils/solid-ui";
-import { UI } from "bf6-portal-utils/ui";
-import { UIContainer } from "bf6-portal-utils/ui/components/container";
-import { UIText } from "bf6-portal-utils/ui/components/text";
+// src/ui/scoreboard.ts
+import { Events } from "bf6-portal-utils/events/index.ts";
+import { SolidUI } from "bf6-portal-utils/solid-ui/index.ts";
+import { UI } from "bf6-portal-utils/ui/index.ts";
+import { UIContainer } from "bf6-portal-utils/ui/components/container/index.ts";
+import { UIText } from "bf6-portal-utils/ui/components/text/index.ts";
 import { getAllTickets } from "../game/mode/controlzone.ts";
 import { FACTIONS, SCORING_FACTION_IDS } from "../config/teams.ts";
 
-/** Ticket count signal per scoring faction — updated on a throttled cadence, not every tick. */
 const [tickets1, setTickets1] = SolidUI.createSignal(0);
 const [tickets2, setTickets2] = SolidUI.createSignal(0);
 const [tickets3, setTickets3] = SolidUI.createSignal(0);
@@ -39,13 +39,12 @@ const ticketSignals: Record<number, () => number> = {
 	3: tickets3,
 };
 
-const FACTION_COLORS: Record<number, string> = {
-	1: UI.COLORS.CYAN ?? "#22D3EE",
-	2: UI.COLORS.ORANGE ?? "#FB923C",
+const FACTION_COLORS: Record<number, mod.Vector> = {
+	1: UI.COLORS.CYAN,
+	2: UI.COLORS.RED,
 	3: UI.COLORS.WHITE,
 };
 
-/** Refreshes the ticket signals from `controlzone.ts`'s tracked state. Coalesced via deferTicks. */
 function refreshTicketSignals(): void {
 	const tickets = getAllTickets();
 	for (const faction of SCORING_FACTION_IDS) {
@@ -53,13 +52,15 @@ function refreshTicketSignals(): void {
 	}
 }
 
-// Coalesce to roughly every 20 ticks (~0.66s at 30Hz) — tickets only change every 4s anyway
-// (CONTROL_ZONE_TICK_SECONDS), so this cadence is already generous.
-SolidUI.deferTicks(20, () => {
-	Events.OngoingGlobal.subscribe(refreshTicketSignals);
+let ticketAccumulator = 0;
+Events.OngoingGlobal.subscribe(() => {
+	ticketAccumulator++;
+	if (ticketAccumulator >= 20) {
+		ticketAccumulator = 0;
+		refreshTicketSignals();
+	}
 });
 
-/** Builds and shows the 3-faction scoreboard overlay for `player`. */
 function buildScoreboard(player: mod.Player): UIContainer {
 	return new UIContainer({
 		position: { x: 0, y: 20 },
@@ -74,12 +75,11 @@ function buildScoreboard(player: mod.Player): UIContainer {
 			size: { width: 240, height: 40 },
 			anchor: mod.UIAnchor.TopCenter,
 			childrenParams: factionRowChildren(faction),
-		})) as UIContainer.ChildParams<UIContainer.Params>[],
+		})) as UIContainer.ChildParams<any>[],
 	});
 }
 
-/** Child params for a single faction's ticket row (short-name label + live ticket count). */
-function factionRowChildren(faction: number): UIContainer.ChildParams<UIText.Params>[] {
+function factionRowChildren(faction: number): UIContainer.ChildParams<any>[] {
 	const definition = FACTIONS[faction as 1 | 2 | 3];
 	return [
 		{
@@ -90,7 +90,7 @@ function factionRowChildren(faction: number): UIContainer.ChildParams<UIText.Par
 			textColor: FACTION_COLORS[faction],
 			textSize: 22,
 			message: mod.Message(definition.shortName),
-		} as UIContainer.ChildParams<UIText.Params>,
+		},
 		{
 			type: UIText,
 			position: { x: 0, y: 0 },
@@ -99,7 +99,7 @@ function factionRowChildren(faction: number): UIContainer.ChildParams<UIText.Par
 			textColor: UI.COLORS.WHITE,
 			textSize: 22,
 			message: () => mod.Message(String(ticketSignals[faction]())),
-		} as UIContainer.ChildParams<UIText.Params>,
+		},
 	];
 }
 
@@ -111,10 +111,6 @@ Events.OnPlayerDeployed.subscribe((eventPlayer) => {
 	}
 });
 
-Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {
-	// See player-state.ts's header note: OnPlayerLeaveGame's bare-number payload can't map back
-	// to a specific scoreboardsByPlayer entry. Stale UIContainers are harmless overlay instances
-	// that simply stop receiving updates once their owning player's client disconnects.
-});
+Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {});
 
 export { factionRowChildren };

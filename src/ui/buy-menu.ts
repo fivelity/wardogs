@@ -10,22 +10,18 @@
  * never leave a player charged without receiving the item.
  */
 
-import { Events } from "bf6-portal-utils/events";
-import { UI } from "bf6-portal-utils/ui";
-import { UIContainer } from "bf6-portal-utils/ui/components/container";
-import { UIText } from "bf6-portal-utils/ui/components/text";
-import { UITextButton } from "bf6-portal-utils/ui/components/text-button";
+// src/ui/buy-menu.ts
+import { Events } from "bf6-portal-utils/events/index.ts";
+import { UI } from "bf6-portal-utils/ui/index.ts";
+import { UIContainer } from "bf6-portal-utils/ui/components/container/index.ts";
+import { UIText } from "bf6-portal-utils/ui/components/text/index.ts";
+import { UITextButton } from "bf6-portal-utils/ui/components/text-button/index.ts";
 import { OBJECT_ID } from "../config/ids.ts";
 import { BASE_PRICES } from "../config/economy.ts";
 import { spendCash } from "../player/wallet.ts";
 import { requirePlayerState } from "../player/player-state.ts";
 import { checkPurchase, type ShopItem } from "./buy-validator.ts";
 
-/**
- * WARDOGS_DESIGN_BRIEF.md "Core Rules" #4 shop catalog stub. Populate alongside
- * `config/economy.ts`'s `BASE_PRICES` as gunsmith/armor items are finalized — kept small here so
- * the buy-menu UI wiring compiles and functions end-to-end today.
- */
 const SHOP_CATALOG: ShopItem[] = [
 	{ id: "armor_plate_carrier", label: "Plate Carrier", basePrice: 1_200, gatingTrack: "support", requiredTier: 2 },
 	{ id: "attachment_suppressor", label: "AK-205 Suppressor", basePrice: 350, gatingTrack: "assault", requiredTier: 1 },
@@ -38,11 +34,6 @@ const BUY_MENU_INTERACT_IDS: readonly number[] = [
 	OBJECT_ID.IP_BUY_MENU_VALKYRA,
 ];
 
-/**
- * Runs the affordability check and, only if it passes, deducts cash. Never grants an item without
- * a successful deduction, and never deducts without granting — the two steps are one function.
- * Returns `true` on a completed purchase.
- */
 function attemptPurchase(player: mod.Player, item: ShopItem): boolean {
 	const state = requirePlayerState(player);
 	const result = checkPurchase(item, state.currentCash, state.tracks);
@@ -53,13 +44,9 @@ function attemptPurchase(player: mod.Player, item: ShopItem): boolean {
 
 	const deducted = spendCash(player, result.price, "purchase");
 	if (!deducted) {
-		// Defensive: checkPurchase and spendCash must agree on affordability; if they ever
-		// disagree, fail closed (no grant) rather than risk a double-charge or free item.
 		return false;
 	}
 
-	// TODO: actual loadout/inventory grant call once the gunsmith/armor grant API is confirmed
-	// against `index.d.ts` (AGENTS.md §2) — not fabricated here.
 	void state;
 	mod.DisplayNotificationMessage(mod.Message(`Purchased: ${item.label}`), player);
 	return true;
@@ -84,7 +71,7 @@ function buildBuyMenu(player: mod.Player): UIContainer {
 				textColor: UI.COLORS.WHITE,
 				textSize: 26,
 				message: mod.Message("HQ ACQUISITIONS"),
-			} as UIContainer.ChildParams<UIText.Params>,
+			},
 			...SHOP_CATALOG.map((item, index) => ({
 				type: UITextButton,
 				position: { x: 0, y: 50 + index * 50 },
@@ -96,7 +83,7 @@ function buildBuyMenu(player: mod.Player): UIContainer {
 				textSize: 20,
 				message: mod.Message(`${item.label} — $${BASE_PRICES[item.id] ?? item.basePrice}`),
 				onClickUp: (p: mod.Player) => attemptPurchase(p, item),
-			} as UIContainer.ChildParams<UITextButton.Params>)),
+			})),
 			{
 				type: UITextButton,
 				position: { x: 0, y: 60 + SHOP_CATALOG.length * 50 - 10 },
@@ -108,8 +95,8 @@ function buildBuyMenu(player: mod.Player): UIContainer {
 				textSize: 18,
 				message: mod.Message("CLOSE PROTOCOL [ESC]"),
 				onClickUp: (p: mod.Player) => closeBuyMenu(p),
-			} as UIContainer.ChildParams<UITextButton.Params>,
-		],
+			},
+		] as UIContainer.ChildParams<any>[],
 	});
 }
 
@@ -141,9 +128,6 @@ Events.OnPlayerInteract.subscribe((eventPlayer, eventInteractPoint) => {
 	}
 });
 
-Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {
-	// See player-state.ts's header note — stale menusByPlayer UIContainers for departed players
-	// are harmless, inert overlay instances (reference-identity keyed, no per-tick cost).
-});
+Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {});
 
 export { attemptPurchase, SHOP_CATALOG };

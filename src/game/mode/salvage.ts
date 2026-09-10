@@ -22,19 +22,18 @@
  * should be double-checked against its real overload list before this ships.
  */
 
-import { Events } from "bf6-portal-utils/events";
-import { RuntimeSpawn_Common } from "bf6-portal-mod-types/runtime-spawn-enums/common";
+/**
+ * salvage.ts — Salvage Pack drop-on-undeploy.
+[cite: 10] */
+
+import { Events } from "bf6-portal-utils/events/index.ts";
 import { addCash } from "../../player/wallet.ts";
 import { SALVAGE_PACK_CASH, SALVAGE_PACK_LIFETIME_SECONDS } from "../../config/constants.ts";
-// NOTE: SALVAGE_PACK_PICKUP_RADIUS (config/constants.ts) is reserved for a future explicit-radius
-// AreaTrigger spawn call once that RuntimeSpawn_Common member's real shape/size parameter is
-// confirmed against the SDK — the trigger spawned below currently uses whatever default radius
-// its prefab defines.
 
 interface ActiveSalvagePack {
 	id: number;
 	pickupTrigger: mod.AreaTrigger;
-	lootSpawner: mod.Object;
+	lootSpawner: mod.LootSpawner;
 	claimed: boolean;
 }
 
@@ -47,15 +46,19 @@ function despawnPack(pack: ActiveSalvagePack): void {
 	activePacks.delete(pack.id);
 }
 
-/** Spawns a lootable Salvage Pack (ammo crate + cash pickup trigger) at `position`. */
 function dropSalvagePack(position: mod.Vector, facing: mod.Vector): void {
-	const lootSpawner = mod.SpawnObject(RuntimeSpawn_Common.PlayerSpawner, position, facing) as mod.Object;
-	// ^ Placeholder loot-visual anchor object; replace with the confirmed ammo-crate prefab member
-	//   from RuntimeSpawn_Common once verified (see file header note). mod.SpawnLoot below is the
-	//   call that actually grants ammo to a looting player, per the confirmed overload set.
-	mod.SpawnLoot(lootSpawner, mod.LootType.Ammo);
+	const lootSpawner = mod.SpawnObject(
+		mod.RuntimeSpawn_Common.LootSpawner,
+		position,
+		facing
+	) as unknown as mod.LootSpawner;
+	mod.SpawnLoot(lootSpawner, mod.Gadgets.Misc_Supply_Pouch);
 
-	const pickupTrigger = mod.SpawnObject(RuntimeSpawn_Common.AreaTrigger, position, facing) as mod.AreaTrigger;
+	const pickupTrigger = mod.SpawnObject(
+		mod.RuntimeSpawn_Common.AreaTrigger,
+		position,
+		facing
+	) as mod.AreaTrigger;
 
 	const pack: ActiveSalvagePack = {
 		id: nextPackId++,
@@ -65,7 +68,6 @@ function dropSalvagePack(position: mod.Vector, facing: mod.Vector): void {
 	};
 	activePacks.set(pack.id, pack);
 
-	// Auto-expire the pack after SALVAGE_PACK_LIFETIME_SECONDS even if nobody looted it.
 	let elapsed = 0;
 	const ASSUMED_SERVER_TICK_SECONDS = 1 / 30;
 	const unsubscribe = Events.OngoingGlobal.subscribe(() => {

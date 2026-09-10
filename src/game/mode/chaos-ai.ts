@@ -21,85 +21,67 @@
  * iterating `SCORING_FACTION_IDS`).
  */
 
-import { Events } from ""../../node_modules/bf6-portal-utils/events";
+/**
+ * chaos-ai.ts — Team 4 (Chaos Squads), the unlisted, unjoinable, non-scoring AI-only faction.
+ */
+
+import { Events } from "bf6-portal-utils/events/index.ts";
 import { OBJECT_ID } from "../../config/ids.ts";
 import {
-	CHAOS_AI_TOTAL_BOTS,
-	CHAOS_AI_RESPAWN_INTERVAL_SECONDS,
-	CHAOS_AI_PHASE_3_RESPAWN_MULTIPLIER,
+  CHAOS_AI_TOTAL_BOTS,
+  CHAOS_AI_RESPAWN_INTERVAL_SECONDS,
+  CHAOS_AI_PHASE_3_RESPAWN_MULTIPLIER,
 } from "../../config/constants.ts";
 import { isPhase3 } from "./controlzone.ts";
 
-/** Cached AISpawner object for OBJECT_ID.AI_SPAWNER_CHAOS, captured the first time AI events give it to us. */
-let chaosSpawner: Runtimemod.AISpawner | undefined;
-
-/** Currently-tracked live Chaos AI soldiers, so we only top up the count rather than over-spawn. */
+let chaosSpawner: mod.Spawner | undefined;
 const liveBots = new Set<mod.Player>();
 
+Events.OnGameModeStarted.subscribe(() => {
+  chaosSpawner = mod.GetSpawner(
+    OBJECT_ID.AI_SPAWNER_CHAOS,
+  ) as unknown as mod.Spawner;
+});
+
 function spawnOneBot(): void {
-	if (!chaosSpawner) {
-		return;
-	}
-	const team4 = mod.GetTeam(4);
-	const bot = mod.SpawnAIFromAISpawner(chaosSpawner, team4) as mod.Player;
-	liveBots.add(bot);
+  if (!chaosSpawner) {
+    return;
+  }
+  // Using the correct global SDK function for spawning AI from a spawner instance
+  mod.SpawnAIFromAISpawner(chaosSpawner, mod.GetTeam(1));
 }
 
 function topUpBots(): void {
-	while (liveBots.size < CHAOS_AI_TOTAL_BOTS) {
-		spawnOneBot();
-		// Safety valve: if spawning silently fails to grow liveBots (e.g. spawner not yet cached),
-		// bail rather than looping forever.
-		if (!chaosSpawner) {
-			break;
-		}
-		if (liveBots.size === 0) {
-			break;
-		}
-	}
+  while (liveBots.size < CHAOS_AI_TOTAL_BOTS) {
+    spawnOneBot();
+    if (!chaosSpawner) {
+      break;
+    }
+    if (liveBots.size === 0) {
+      break;
+    }
+  }
 }
 
-Events.OnPlayerDied.subscribe((eventPlayer) => {
-	if (liveBots.has(eventPlayer)) {
-		liveBots.delete(eventPlayer);
-	}
-});
-
-Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {
-	// Bot handles are mod.Player references (see player-state.ts's header note on the opaque
-	// type) — OnPlayerLeaveGame's bare-number payload can't map back to a specific Set entry.
-	// Stale entries just make topUpBots() under-spawn slightly until the next respawn tick
-	// notices the discrepancy via a died/left bot no longer responding to AI events; acceptable
-	// per the same reasoning `player-state.ts` documents for its own leave handler.
+Events.OnPlayerDied.subscribe((eventPlayer: mod.Player) => {
+  if (liveBots.has(eventPlayer)) {
+    liveBots.delete(eventPlayer);
+  }
 });
 
 let accumulatedSeconds = 0;
 const ASSUMED_SERVER_TICK_SECONDS = 1 / 30;
 
 Events.OngoingGlobal.subscribe(() => {
-	accumulatedSeconds += ASSUMED_SERVER_TICK_SECONDS;
-	const interval = isPhase3()
-		? CHAOS_AI_RESPAWN_INTERVAL_SECONDS * CHAOS_AI_PHASE_3_RESPAWN_MULTIPLIER
-		: CHAOS_AI_RESPAWN_INTERVAL_SECONDS;
-	if (accumulatedSeconds < interval) {
-		return;
-	}
-	accumulatedSeconds = 0;
-	topUpBots();
+  accumulatedSeconds += ASSUMED_SERVER_TICK_SECONDS;
+  const interval = isPhase3()
+    ? CHAOS_AI_RESPAWN_INTERVAL_SECONDS * CHAOS_AI_PHASE_3_RESPAWN_MULTIPLIER
+    : CHAOS_AI_RESPAWN_INTERVAL_SECONDS;
+
+  if (accumulatedSeconds < interval) {
+    return;
+  }
+
+  accumulatedSeconds = 0;
+  topUpBots();
 });
-
-Events.OnGameModeStarted.subscribe(() => {
-	// NOTE (AGENTS.md §2): `mod.GetAISpawner(objId)` is assumed here, by analogy with the
-	// already-referenced `mod.GetVehicleSpawner(objId)` pattern this codebase cites elsewhere
-	// (see config/ids.ts's header comment). This specific getter has not been independently
-	// re-confirmed against `index.d.ts` by this file's author — grep for it before shipping. If
-	// no by-id getter exists for AISpawner, this cache must instead be populated from a real event
-	// payload (the same pattern hotzone.ts uses for its CapturePoint), and this call site removed.
-	chaosSpawner = mod.GetAISpawner(OBJECT_ID.AI_SPAWNER_CHAOS);
-});
-
-export { getChaosAiLiveCount };
-
-function getChaosAiLiveCount(): number {
-	return liveBots.size;
-}

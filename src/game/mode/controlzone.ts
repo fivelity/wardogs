@@ -16,7 +16,7 @@
  *     grepped: only setters exist, no `AddGameModeScore` getter/adder (see AGENTS.md §2).
  */
 
-import { Events } from "bf6-portal-utils/events";
+import { Events } from "bf6-portal-utils/events/index.ts";
 import { OBJECT_ID } from "../../config/ids.ts";
 import { requirePlayerState, getAllTrackedPlayers } from "../../player/player-state.ts";
 import { getFactionId, isScoringFaction, SCORING_FACTION_IDS, type FactionId } from "../../config/teams.ts";
@@ -134,7 +134,7 @@ Events.OngoingGlobal.subscribe(() => {
 	evaluateWinCondition(ticketsByFaction);
 });
 
-Events.OnGameModeStarted.subscribe(() => {
+
 	// Force the native win-target to 1 so Portal's own win-detection never fires prematurely;
 	// win-condition.ts's explicit EndGameMode call is the real win trigger. `SetGameModeCriteria`
 	// only sets which direction of score change counts as "winning" (HighestProgress here) — the
@@ -142,11 +142,13 @@ Events.OnGameModeStarted.subscribe(() => {
 	// matching `GetTargetScore` getter at index.d.ts:2276). Both are needed; conflating them was
 	// an earlier draft mistake in this file. See AGENTS.md §2 and WARDOGS_DESIGN_BRIEF.md →
 	// "Win Conditions" for why this workaround exists at all.
-	mod.SetGameModeCriteria(mod.ScoreCriteria.HighestProgress);
-	mod.SetGameModeTargetScore(1);
-	for (const faction of SCORING_FACTION_IDS) {
-		mod.SetGameModeInitialScore(mod.GetTeam(faction), 0);
-	}
+Events.OnGameModeStarted.subscribe(() => {
+    mod.SetGameModeCriteria(mod.ScoreCriteria.HighestProgress);
+    mod.SetGameModeTargetScore(1);
+    
+    for (const faction of SCORING_FACTION_IDS) {
+        mod.SetGameModeInitialScore(mod.GetTeam(faction), 0);
+    }
 });
 
 export { setTickets };

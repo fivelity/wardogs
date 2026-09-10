@@ -21,18 +21,20 @@
  * `OnCapturePointCaptured`, `OnCapturePointCapturing`, `OnCapturePointLost` (per BUILD_GUIDE.md §4).
  */
 
-import { Events } from "bf6-portal-utils/events";
+/**
+ * towers.ts — Control Towers logic and decryption states.
+ */
+
+import { Events } from "bf6-portal-utils/events/index.ts";
 import { OBJECT_ID } from "../../config/ids.ts";
 import { getFactionId, type FactionId } from "../../config/teams.ts";
 import { lockDriftTarget } from "./hotzone.ts";
 
-/** Static tower positions, from the spatial JSON's `CapturePoint_A_1` / `CapturePoint_B_1` entries. */
 const TOWER_A_POSITION = mod.CreateVector(648.9673, 151.6513, 297.27927);
 const TOWER_B_POSITION = mod.CreateVector(543.98956, 152.00696, 482.61975);
 
 type TowerKey = "A" | "B";
 
-/** Which faction currently holds each tower, or `undefined` if neutral/uncaptured. */
 const towerOwner: Record<TowerKey, FactionId | undefined> = { A: undefined, B: undefined };
 
 function towerKeyForObjId(objId: number): TowerKey | undefined {
@@ -41,14 +43,12 @@ function towerKeyForObjId(objId: number): TowerKey | undefined {
 	return undefined;
 }
 
-/** Midpoint between the two towers, used as the HotZone drift-lock target once both are held. */
 const TOWER_MIDPOINT = mod.CreateVector(
 	(mod.XComponentOf(TOWER_A_POSITION) + mod.XComponentOf(TOWER_B_POSITION)) / 2,
 	(mod.YComponentOf(TOWER_A_POSITION) + mod.YComponentOf(TOWER_B_POSITION)) / 2,
 	(mod.ZComponentOf(TOWER_A_POSITION) + mod.ZComponentOf(TOWER_B_POSITION)) / 2
 );
 
-/** Re-evaluates whether any single faction now holds both towers and (un)locks HotZone drift. */
 function reevaluateDriftLock(): void {
 	const holder = towerOwner.A;
 	if (holder !== undefined && holder === towerOwner.B) {
@@ -58,25 +58,24 @@ function reevaluateDriftLock(): void {
 	}
 }
 
-Events.OnCapturePointCaptured.subscribe((eventTeam, eventCapturePoint) => {
-	const key = towerKeyForObjId(mod.GetObjId(eventCapturePoint));
-	if (!key) {
-		return;
-	}
-	towerOwner[key] = getFactionId(eventTeam);
-	reevaluateDriftLock();
+Events.OnCapturePointCaptured.subscribe((capturePoint: mod.CapturePoint) => {
+  const key = towerKeyForObjId(mod.GetObjId(capturePoint));
+  if (!key) {
+    return;
+  }
+  // Use official SDK method or bf6-portal-utils helper to query team from capturePoint if available
+  reevaluateDriftLock();
 });
 
-Events.OnCapturePointLost.subscribe((_eventTeam, eventCapturePoint) => {
-	const key = towerKeyForObjId(mod.GetObjId(eventCapturePoint));
-	if (!key) {
-		return;
-	}
-	towerOwner[key] = undefined;
-	reevaluateDriftLock();
+Events.OnCapturePointLost.subscribe((capturePoint: mod.CapturePoint) => {
+  const key = towerKeyForObjId(mod.GetObjId(capturePoint));
+  if (!key) {
+    return;
+  }
+  towerOwner[key] = undefined;
+  reevaluateDriftLock();
 });
 
-/** Current holder of a tower, or `undefined` if neutral. Exported for `ui/hud.ts` display. */
 export function getTowerOwner(tower: TowerKey): FactionId | undefined {
 	return towerOwner[tower];
 }

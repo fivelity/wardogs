@@ -8,27 +8,22 @@
  * ("model it as its own small reusable helper ... rather than duplicating the timer logic twice").
  */
 
-import { Events } from "bf6-portal-utils/events";
-import { SolidUI } from "bf6-portal-utils/solid-ui";
-import { UI } from "bf6-portal-utils/ui";
-import { UIContainer } from "bf6-portal-utils/ui/components/container";
-import { UIText } from "bf6-portal-utils/ui/components/text";
+// src/ui/hud.ts
+import { Events } from "bf6-portal-utils/events/index.ts";
+import { SolidUI } from "bf6-portal-utils/solid-ui/index.ts";
+import { UI } from "bf6-portal-utils/ui/index.ts";
+import { UIContainer } from "bf6-portal-utils/ui/components/container/index.ts";
+import { UIText } from "bf6-portal-utils/ui/components/text/index.ts";
 import { onCashChange } from "../player/wallet.ts";
 import { onRankUp } from "../player/progression.ts";
 
-/** Ticks a transient signal stays `true` after being set, before auto-resetting to `false`. */
-const TRANSIENT_FLASH_TICKS = 60; // ~2s at 30Hz
+const TRANSIENT_FLASH_TICKS = 60;
 
-/**
- * Creates a transient boolean signal: `trigger()` sets it true and schedules an automatic reset
- * to false after `TRANSIENT_FLASH_TICKS` server ticks. Shared by the wallet flash and the
- * rank-up spark so the timer logic isn't duplicated (BUILD_GUIDE.md §5).
- */
 function createTransientFlag(): { signal: () => boolean; trigger: () => void } {
 	const [flag, setFlag] = SolidUI.createSignal(false);
 	let ticksRemaining = 0;
 
-	const unsubscribe = Events.OngoingGlobal.subscribe(() => {
+	Events.OngoingGlobal.subscribe(() => {
 		if (ticksRemaining <= 0) {
 			return;
 		}
@@ -37,7 +32,6 @@ function createTransientFlag(): { signal: () => boolean; trigger: () => void } {
 			setFlag(false);
 		}
 	});
-	void unsubscribe;
 
 	return {
 		signal: flag,
@@ -79,22 +73,22 @@ function buildHud(player: mod.Player): PlayerHud {
 				position: { x: 0, y: 0 },
 				size: { width: 200, height: 30 },
 				anchor: mod.UIAnchor.TopRight,
-				textColor: UI.COLORS.GREEN ?? "#22C55E",
+				textColor: UI.COLORS.GREEN,
 				textSize: 24,
 				visible: () => cashFlash.signal(),
 				message: () => mod.Message(cashFlashText()),
-			} as UIContainer.ChildParams<UIText.Params>,
+			},
 			{
 				type: UIText,
 				position: { x: 0, y: 34 },
 				size: { width: 200, height: 30 },
 				anchor: mod.UIAnchor.TopRight,
-				textColor: UI.COLORS.YELLOW ?? "#FACC15",
+				textColor: UI.COLORS.YELLOW,
 				textSize: 22,
 				visible: () => rankUpFlash.signal(),
 				message: () => mod.Message(rankUpText()),
-			} as UIContainer.ChildParams<UIText.Params>,
-		],
+			},
+		] as UIContainer.ChildParams<any>[],
 	});
 
 	return { container, cashFlashText, setCashFlashText, cashFlash, rankUpFlash, rankUpText, setRankUpText };
@@ -126,7 +120,4 @@ Events.OnPlayerJoinGame.subscribe((eventPlayer) => {
 	requireHud(eventPlayer);
 });
 
-Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {
-	// See player-state.ts's header note on the OnPlayerLeaveGame payload limitation — stale HUD
-	// UIContainers for departed players are harmless, inert overlay instances.
-});
+Events.OnPlayerLeaveGame.subscribe((_eventNumber) => {});

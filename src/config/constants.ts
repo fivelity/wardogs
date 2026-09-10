@@ -49,7 +49,7 @@ export const HOTZONE_DRIFT_STEP_RADIUS = 25;
 /** Seconds `mod.MoveObjectOverTime` takes to glide the flag to its next drift target. */
 export const HOTZONE_DRIFT_DURATION_SECONDS = 20;
 /** Seconds between picking a new drift target once the previous glide completes. */
-export const HOTZONE_DRIFT_INTERVAL_SECONDS = 45;
+export const HOTZONE_DRIFT_INTERVAL_SECONDS = 25;
 
 // ── Control Tower tuning (game/mode/towers.ts) ──
 /** Decryption segments required, per tower, before HotZone drift-lock unlocks for that team. */
